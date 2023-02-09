@@ -172,6 +172,10 @@ t.ly/5gSr
 // follow --> https://youtu.be/x1fCROXiSks
 
 
+// To make responsive use
+https://pub.dev/packages/flutter_screenutil
+flutter_screenutil: ^5.6.1
+
 
 
 
