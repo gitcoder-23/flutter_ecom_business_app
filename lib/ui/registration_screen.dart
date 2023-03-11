@@ -1,13 +1,46 @@
-// ignore_for_file: unused_import
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_app/const/app_colors.dart';
-import 'package:flutter_ecom_app/ui/registration_screen.dart';
-import 'package:flutter_ecom_app/widgets/customButton.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_ecom_app/ui/login_screen.dart';
+import 'package:flutter_ecom_app/ui/user_form.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+class RegistrationScreen extends StatefulWidget {
+  @override
+  _RegistrationScreenState createState() => _RegistrationScreenState();
+}
+
+class _RegistrationScreenState extends State<RegistrationScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _obscureText = true;
+
+  signUp() async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+              email: _emailController.text, password: _passwordController.text);
+      var authCredential = userCredential.user;
+      print(authCredential!.uid);
+      if (authCredential.uid.isNotEmpty) {
+        Navigator.push(context, CupertinoPageRoute(builder: (_) => UserForm()));
+      } else {
+        Fluttertoast.showToast(msg: "Something is wrong");
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        Fluttertoast.showToast(msg: "The password provided is too weak.");
+      } else if (e.code == 'email-already-in-use') {
+        Fluttertoast.showToast(
+            msg: "The account already exists for that email.");
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +66,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      "Sign In",
+                      "Sign Up",
                       style: TextStyle(fontSize: 22.sp, color: Colors.white),
                     ),
                   ],
@@ -61,7 +94,7 @@ class LoginScreen extends StatelessWidget {
                           height: 20.h,
                         ),
                         Text(
-                          "Welcome Back",
+                          "Welcome Buddy!",
                           style: TextStyle(
                               fontSize: 22.sp, color: AppColors.deep_orange),
                         ),
@@ -96,6 +129,7 @@ class LoginScreen extends StatelessWidget {
                             ),
                             Expanded(
                               child: TextField(
+                                controller: _emailController,
                                 decoration: InputDecoration(
                                   hintText: "thed9954@gmail.com",
                                   hintStyle: TextStyle(
@@ -136,6 +170,8 @@ class LoginScreen extends StatelessWidget {
                             ),
                             Expanded(
                               child: TextField(
+                                controller: _passwordController,
+                                obscureText: _obscureText,
                                 decoration: InputDecoration(
                                   hintText: "password must be 6 character",
                                   hintStyle: TextStyle(
@@ -147,12 +183,27 @@ class LoginScreen extends StatelessWidget {
                                     fontSize: 15.sp,
                                     color: AppColors.deep_orange,
                                   ),
-                                  suffixIcon: IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(
-                                        Icons.visibility_off,
-                                        size: 20.w,
-                                      )),
+                                  suffixIcon: _obscureText == true
+                                      ? IconButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _obscureText = false;
+                                            });
+                                          },
+                                          icon: Icon(
+                                            Icons.remove_red_eye,
+                                            size: 20.w,
+                                          ))
+                                      : IconButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _obscureText = true;
+                                            });
+                                          },
+                                          icon: Icon(
+                                            Icons.visibility_off,
+                                            size: 20.w,
+                                          )),
                                 ),
                               ),
                             ),
@@ -163,9 +214,23 @@ class LoginScreen extends StatelessWidget {
                           height: 50.h,
                         ),
                         // elevated button
-                        customButton(
-                          "Sign In",
-                          () {},
+                        SizedBox(
+                          width: 1.sw,
+                          height: 56.h,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              signUp();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.deep_orange,
+                              elevation: 3,
+                            ),
+                            child: Text(
+                              "Continue",
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 18.sp),
+                            ),
+                          ),
                         ),
                         SizedBox(
                           height: 20.h,
@@ -182,7 +247,7 @@ class LoginScreen extends StatelessWidget {
                             ),
                             GestureDetector(
                               child: Text(
-                                " Sign Up",
+                                " Sign In",
                                 style: TextStyle(
                                   fontSize: 13.sp,
                                   fontWeight: FontWeight.w600,
@@ -190,11 +255,11 @@ class LoginScreen extends StatelessWidget {
                                 ),
                               ),
                               onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => RegistrationScreen(),
-                                  ),
-                                );
+                                Navigator.push(
+                                    context,
+                                    CupertinoPageRoute(
+                                        builder: (context) =>
+                                            const LoginScreen()));
                               },
                             )
                           ],
